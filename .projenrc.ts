@@ -40,6 +40,8 @@ const devDeps = [
   'validate-branch-name@^1.3.2',
 ];
 
+const deps = [`@aws-cdk/aws-lambda-python-alpha@${cdkVersion}-alpha.0`];
+
 const project = new awscdk.AwsCdkConstructLibrary({
   author: 'Bryan Galvin',
   authorAddress: 'bcgalvin@gmail.com',
@@ -53,6 +55,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   projenrcTs: true,
   repositoryUrl: 'https://github.com/metaflowlabs/metaflow-event-blueprints.git',
   packageManager: NodePackageManager.PNPM,
+  deps: deps,
   devDeps: devDeps,
   prettier: true,
   prettierOptions: {
