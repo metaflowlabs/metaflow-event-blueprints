@@ -1,5 +1,5 @@
 import { awscdk } from 'projen';
-import { TrailingComma, TypescriptConfigOptions } from 'projen/lib/javascript';
+import { TrailingComma, TypescriptConfigOptions, UpdateSnapshot } from 'projen/lib/javascript';
 import { NodePackageManager } from 'projen/lib/javascript/node-package';
 import { setupHusky } from './projenrc/husky';
 
@@ -65,6 +65,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
       trailingComma: TrailingComma.ALL,
     },
   },
+
   eslintOptions: {
     prettier: true,
     dirs: ['src', 'projenrc'],
@@ -72,6 +73,9 @@ const project = new awscdk.AwsCdkConstructLibrary({
   },
   tsconfig: {
     ...tsConfigOptions,
+  },
+  jestOptions: {
+    updateSnapshot: UpdateSnapshot.NEVER,
   },
   gitignore: commonIgnore,
   pullRequestTemplate: false,
@@ -96,6 +100,11 @@ project.addFields({
     '.projenrc.ts': ['prettier --write', 'eslint --fix'],
     'README.md': ['prettier --write'],
   },
+});
+
+project.addTask('typecheck', {
+  description: 'typecheck',
+  exec: 'tsc --noEmit -p tsconfig.dev.json ',
 });
 
 setupHusky(project);
