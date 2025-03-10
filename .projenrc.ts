@@ -1,4 +1,4 @@
-import { awscdk } from 'projen';
+import { awscdk, TextFile } from 'projen';
 import { TrailingComma, TypescriptConfigOptions, UpdateSnapshot } from 'projen/lib/javascript';
 import { NodePackageManager } from 'projen/lib/javascript/node-package';
 import { setupHusky } from './projenrc/husky';
@@ -12,8 +12,11 @@ const nodejsVersion = {
 
 const tsConfigOptions: TypescriptConfigOptions = {
   compilerOptions: {
-    esModuleInterop: true,
+    rootDir: '.',
+    sourceRoot: '.',
+    outDir: 'lib',
   },
+  include: ['metaflow-event-blueprints/**/*', 'projenrc/**/*'],
 };
 
 const commonIgnore = [
@@ -55,6 +58,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   projenrcTs: true,
   repositoryUrl: 'https://github.com/metaflowlabs/metaflow-event-blueprints.git',
   packageManager: NodePackageManager.PNPM,
+  pnpmVersion: '9',
   deps: deps,
   devDeps: devDeps,
   prettier: true,
@@ -66,7 +70,6 @@ const project = new awscdk.AwsCdkConstructLibrary({
       trailingComma: TrailingComma.ALL,
     },
   },
-
   eslintOptions: {
     prettier: true,
     dirs: ['src', 'projenrc'],
@@ -87,6 +90,14 @@ const project = new awscdk.AwsCdkConstructLibrary({
 });
 
 project.package.addDevDeps('eslint@^8');
+
+new TextFile(project, '.nvmrc', {
+  lines: [nodejsVersion.MIN],
+});
+
+// PNPM support for bundledDeps https://pnpm.io/npmrc#node-linker
+project.npmrc.addConfig('node-linker', 'hoisted');
+project.npmrc.addConfig('manage-package-manager-versions', 'true');
 
 project.addScripts({
   ['prettier']: 'prettier --write src/**/*.ts test/**/*.ts projenrc/**/*.ts README.md',

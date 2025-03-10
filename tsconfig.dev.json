@@ -23,11 +23,16 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "stripInternal": true,
-    "target": "ES2019"
+    "target": "ES2019",
+    "rootDir": ".",
+    "sourceRoot": ".",
+    "outDir": "lib"
   },
   "include": [
     "src/**/*.ts",
     "test/**/*.ts",
+    "metaflow-event-blueprints/**/*",
+    "projenrc/**/*",
     ".projenrc.ts",
     "projenrc/**/*.ts"
   ],
