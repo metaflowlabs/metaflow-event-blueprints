@@ -39,6 +39,7 @@ const devDeps = [
   '@commitlint/cz-commitlint@^18.4.3',
   'cz-conventional-changelog@^3.3.0',
   'husky@^9.1.7',
+  'cdk-nag',
   'lint-staged@^15.4.3',
   'validate-branch-name@^1.3.2',
 ];

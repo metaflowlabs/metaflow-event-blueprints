@@ -1,0 +1,590 @@
+{
+ "Parameters": {
+  "MetaflowProviderMetaflowParameterParameter7D751255": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "metaflow-config"
+  },
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Resources": {
+  "MetaflowProviderOuterboundsLayer5D314C89": {
+   "Type": "AWS::Lambda::LayerVersion",
+   "Properties": {
+    "CompatibleArchitectures": [
+     "arm64"
+    ],
+    "CompatibleRuntimes": [
+     "python3.12"
+    ],
+    "Content": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "558aaca4eeb9b8ac2dc4b5da1c7aa58869acb7a74b8bde9d276c6bd32576eefc.zip"
+    },
+    "Description": "Layer containing the Outerbounds Metaflow dependencies"
+   }
+  },
+  "MetaflowProviderExecutorFunctionServiceRole2E15118D": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  "MetaflowProviderExecutorFunctionServiceRoleDefaultPolicyADB7BCCB": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "ssm:DescribeParameters",
+        "ssm:GetParameters",
+        "ssm:GetParameter",
+        "ssm:GetParameterHistory"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:",
+          {
+           "Ref": "AWS::Partition"
+          },
+          ":ssm:",
+          {
+           "Ref": "AWS::Region"
+          },
+          ":",
+          {
+           "Ref": "AWS::AccountId"
+          },
+          ":parameter/metaflow-config"
+         ]
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "MetaflowProviderExecutorFunctionServiceRoleDefaultPolicyADB7BCCB",
+    "Roles": [
+     {
+      "Ref": "MetaflowProviderExecutorFunctionServiceRole2E15118D"
+     }
+    ]
+   }
+  },
+  "MetaflowProviderExecutorFunctionF7CE652D": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "arm64"
+    ],
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "6746a653b0a7685616e3ac00fdad2eea0e071eaa3b10692b179bb890890bb222.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "METAFLOW_CONFIG_PARAMETER_NAME": "metaflow-config"
+     }
+    },
+    "Handler": "index.handler",
+    "Layers": [
+     {
+      "Ref": "MetaflowProviderOuterboundsLayer5D314C89"
+     },
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":lambda:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":017000801446:layer:AWSLambdaPowertoolsPythonV3-python312-arm64:7"
+       ]
+      ]
+     }
+    ],
+    "MemorySize": 256,
+    "Role": {
+     "Fn::GetAtt": [
+      "MetaflowProviderExecutorFunctionServiceRole2E15118D",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.12",
+    "Timeout": 30
+   },
+   "DependsOn": [
+    "MetaflowProviderExecutorFunctionServiceRoleDefaultPolicyADB7BCCB",
+    "MetaflowProviderExecutorFunctionServiceRole2E15118D"
+   ]
+  },
+  "MetaflowProviderRestApiC355383D": {
+   "Type": "AWS::ApiGateway::RestApi",
+   "Properties": {
+    "Description": "API Gateway for Metaflow Executor Lambda",
+    "Name": "Metaflow Executor API"
+   }
+  },
+  "MetaflowProviderRestApiCloudWatchRole8ABDABE6": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "apigateway.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+       ]
+      ]
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain"
+  },
+  "MetaflowProviderRestApiAccount5CC0AF4A": {
+   "Type": "AWS::ApiGateway::Account",
+   "Properties": {
+    "CloudWatchRoleArn": {
+     "Fn::GetAtt": [
+      "MetaflowProviderRestApiCloudWatchRole8ABDABE6",
+      "Arn"
+     ]
+    }
+   },
+   "DependsOn": [
+    "MetaflowProviderRestApiC355383D"
+   ],
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain"
+  },
+  "MetaflowProviderRestApiDeployment5FE2B84D7abdfe3d6d9cd6d7b5a1e4fd9e1e7c40": {
+   "Type": "AWS::ApiGateway::Deployment",
+   "Properties": {
+    "Description": "Test stage for Metaflow Executor API",
+    "RestApiId": {
+     "Ref": "MetaflowProviderRestApiC355383D"
+    }
+   },
+   "DependsOn": [
+    "MetaflowProviderRestApiproxyANY77BC23AC",
+    "MetaflowProviderRestApiproxy0FEB9D92",
+    "MetaflowProviderRestApiANY20B81E46"
+   ]
+  },
+  "MetaflowProviderRestApiDeploymentStagetest8DD12266": {
+   "Type": "AWS::ApiGateway::Stage",
+   "Properties": {
+    "DeploymentId": {
+     "Ref": "MetaflowProviderRestApiDeployment5FE2B84D7abdfe3d6d9cd6d7b5a1e4fd9e1e7c40"
+    },
+    "Description": "Test stage for Metaflow Executor API",
+    "RestApiId": {
+     "Ref": "MetaflowProviderRestApiC355383D"
+    },
+    "StageName": "test",
+    "TracingEnabled": true
+   },
+   "DependsOn": [
+    "MetaflowProviderRestApiAccount5CC0AF4A"
+   ]
+  },
+  "MetaflowProviderRestApiproxy0FEB9D92": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "MetaflowProviderRestApiC355383D",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "{proxy+}",
+    "RestApiId": {
+     "Ref": "MetaflowProviderRestApiC355383D"
+    }
+   }
+  },
+  "MetaflowProviderRestApiproxyANYApiPermissiontestMetaflowProviderRestApi3E1EB419ANYproxy636AABB5": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "MetaflowProviderExecutorFunctionF7CE652D",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "MetaflowProviderRestApiC355383D"
+       },
+       "/",
+       {
+        "Ref": "MetaflowProviderRestApiDeploymentStagetest8DD12266"
+       },
+       "/*/*"
+      ]
+     ]
+    }
+   }
+  },
+  "MetaflowProviderRestApiproxyANYApiPermissionTesttestMetaflowProviderRestApi3E1EB419ANYproxyA72A7C64": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "MetaflowProviderExecutorFunctionF7CE652D",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "MetaflowProviderRestApiC355383D"
+       },
+       "/test-invoke-stage/*/*"
+      ]
+     ]
+    }
+   }
+  },
+  "MetaflowProviderRestApiproxyANY77BC23AC": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": true,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "ANY",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "MetaflowProviderExecutorFunctionF7CE652D",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "MetaflowProviderRestApiproxy0FEB9D92"
+    },
+    "RestApiId": {
+     "Ref": "MetaflowProviderRestApiC355383D"
+    }
+   }
+  },
+  "MetaflowProviderRestApiANY20B81E46": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": true,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "ANY",
+    "Integration": {
+     "Type": "MOCK"
+    },
+    "ResourceId": {
+     "Fn::GetAtt": [
+      "MetaflowProviderRestApiC355383D",
+      "RootResourceId"
+     ]
+    },
+    "RestApiId": {
+     "Ref": "MetaflowProviderRestApiC355383D"
+    }
+   }
+  },
+  "MetaflowProviderApiKey1A5EC786": {
+   "Type": "AWS::ApiGateway::ApiKey",
+   "Properties": {
+    "Description": "API Key for testing Metaflow Executor API",
+    "Enabled": true,
+    "Name": "MetaflowExecutorTestApiKey"
+   }
+  },
+  "MetaflowProviderUsagePlanF540B9B7": {
+   "Type": "AWS::ApiGateway::UsagePlan",
+   "Properties": {
+    "ApiStages": [
+     {
+      "ApiId": {
+       "Ref": "MetaflowProviderRestApiC355383D"
+      },
+      "Stage": {
+       "Ref": "MetaflowProviderRestApiDeploymentStagetest8DD12266"
+      },
+      "Throttle": {}
+     }
+    ],
+    "Description": "Usage plan for testing Metaflow Executor API",
+    "UsagePlanName": "MetaflowExecutorTestUsagePlan"
+   }
+  },
+  "MetaflowProviderUsagePlanUsagePlanKeyResourcetestMetaflowProviderApiKeyFF7E24EB2610B323": {
+   "Type": "AWS::ApiGateway::UsagePlanKey",
+   "Properties": {
+    "KeyId": {
+     "Ref": "MetaflowProviderApiKey1A5EC786"
+    },
+    "KeyType": "API_KEY",
+    "UsagePlanId": {
+     "Ref": "MetaflowProviderUsagePlanF540B9B7"
+    }
+   }
+  }
+ },
+ "Outputs": {
+  "MetaflowProviderRestApiEndpoint014E4471": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "MetaflowProviderRestApiC355383D"
+      },
+      ".execute-api.",
+      {
+       "Ref": "AWS::Region"
+      },
+      ".",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "MetaflowProviderRestApiDeploymentStagetest8DD12266"
+      },
+      "/"
+     ]
+    ]
+   }
+  },
+  "MetaflowApiEndpoint": {
+   "Description": "Metaflow Executor API Endpoint URL",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "MetaflowProviderRestApiC355383D"
+      },
+      ".execute-api.",
+      {
+       "Ref": "AWS::Region"
+      },
+      ".",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "MetaflowProviderRestApiDeploymentStagetest8DD12266"
+      },
+      "/"
+     ]
+    ]
+   },
+   "Export": {
+    "Name": "MetaflowApiEndpoint"
+   }
+  },
+  "MetaflowApiKeyId": {
+   "Description": "Metaflow Executor API Key ID (use with: aws apigateway get-api-key --api-key [keyId] --include-value)",
+   "Value": {
+    "Ref": "MetaflowProviderApiKey1A5EC786"
+   },
+   "Export": {
+    "Name": "MetaflowApiKeyId"
+   }
+  },
+  "MetaflowHealthEndpointCurl": {
+   "Description": "Curl command for the health endpoint (replace ${API_KEY_VALUE} with the actual API key value)",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "curl -X GET \"https://",
+      {
+       "Ref": "MetaflowProviderRestApiC355383D"
+      },
+      ".execute-api.",
+      {
+       "Ref": "AWS::Region"
+      },
+      ".",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "MetaflowProviderRestApiDeploymentStagetest8DD12266"
+      },
+      "/health\" -H \"x-api-key: ${API_KEY_VALUE}\""
+     ]
+    ]
+   }
+  },
+  "MetaflowLatestFlowEndpointCurl": {
+   "Description": "Curl command for the latest flow endpoint (replace ${API_KEY_VALUE} with the actual API key value)",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "curl -X GET \"https://",
+      {
+       "Ref": "MetaflowProviderRestApiC355383D"
+      },
+      ".execute-api.",
+      {
+       "Ref": "AWS::Region"
+      },
+      ".",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "MetaflowProviderRestApiDeploymentStagetest8DD12266"
+      },
+      "/flows/latest\" -H \"x-api-key: ${API_KEY_VALUE}\""
+     ]
+    ]
+   }
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

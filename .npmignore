@@ -22,6 +22,8 @@ dist
 tsconfig.tsbuildinfo
 /.eslintrc.json
 !.jsii
+test/.tmp
+test/metaflow-provider.integ.snapshot
 /.gitattributes
 /.projenrc.ts
 /projenrc

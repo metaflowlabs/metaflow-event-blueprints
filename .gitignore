@@ -51,6 +51,15 @@ junit.xml
 !/.eslintrc.json
 .jsii
 tsconfig.json
+test/.tmp
+test/metaflow-provider.integ.snapshot/asset.*
+test/metaflow-provider.integ.snapshot/**/asset.*
+test/metaflow-provider.integ.snapshot/cdk.out
+test/metaflow-provider.integ.snapshot/**/cdk.out
+test/metaflow-provider.integ.snapshot/manifest.json
+test/metaflow-provider.integ.snapshot/**/manifest.json
+test/metaflow-provider.integ.snapshot/tree.json
+test/metaflow-provider.integ.snapshot/**/tree.json
 !/.nvmrc
 !/.husky/commit-msg
 !/.husky/pre-commit

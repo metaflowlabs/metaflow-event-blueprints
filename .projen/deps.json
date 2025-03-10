@@ -45,6 +45,15 @@
       "type": "build"
     },
     {
+      "name": "aws-cdk",
+      "version": "^2",
+      "type": "build"
+    },
+    {
+      "name": "cdk-nag",
+      "type": "build"
+    },
+    {
       "name": "cz-conventional-changelog",
       "version": "^3.3.0",
       "type": "build"

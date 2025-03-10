@@ -126,6 +126,78 @@
         }
       ]
     },
+    "integ:metaflow-provider:assert": {
+      "name": "integ:metaflow-provider:assert",
+      "description": "assert the snapshot of integration test 'metaflow-provider'",
+      "steps": [
+        {
+          "exec": "[ -d \"test/metaflow-provider.integ.snapshot\" ] || (echo \"No snapshot available for integration test 'metaflow-provider'. Run 'projen integ:metaflow-provider:deploy' to capture.\" && exit 1)"
+        },
+        {
+          "exec": "cdk synth --app \"ts-node -P tsconfig.dev.json test/metaflow-provider.integ.ts\" --no-notices --no-version-reporting --no-asset-metadata --no-path-metadata -o test/.tmp/metaflow-provider.integ/assert.cdk.out > /dev/null"
+        },
+        {
+          "exec": "diff -r -x asset.* -x cdk.out -x manifest.json -x tree.json test/metaflow-provider.integ.snapshot/ test/.tmp/metaflow-provider.integ/assert.cdk.out/"
+        }
+      ]
+    },
+    "integ:metaflow-provider:deploy": {
+      "name": "integ:metaflow-provider:deploy",
+      "description": "deploy integration test 'metaflow-provider' and capture snapshot",
+      "steps": [
+        {
+          "exec": "rm -fr test/.tmp/metaflow-provider.integ/deploy.cdk.out"
+        },
+        {
+          "exec": "cdk deploy --app \"ts-node -P tsconfig.dev.json test/metaflow-provider.integ.ts\" --no-notices --no-version-reporting --no-asset-metadata --no-path-metadata '**' --require-approval=never -o test/.tmp/metaflow-provider.integ/deploy.cdk.out"
+        },
+        {
+          "exec": "rm -fr test/metaflow-provider.integ.snapshot"
+        },
+        {
+          "exec": "mv test/.tmp/metaflow-provider.integ/deploy.cdk.out test/metaflow-provider.integ.snapshot"
+        },
+        {
+          "spawn": "integ:metaflow-provider:destroy"
+        }
+      ]
+    },
+    "integ:metaflow-provider:destroy": {
+      "name": "integ:metaflow-provider:destroy",
+      "description": "destroy integration test 'metaflow-provider'",
+      "steps": [
+        {
+          "exec": "cdk destroy --app test/metaflow-provider.integ.snapshot '**' --no-version-reporting"
+        }
+      ]
+    },
+    "integ:metaflow-provider:snapshot": {
+      "name": "integ:metaflow-provider:snapshot",
+      "description": "update snapshot for integration test \"metaflow-provider\"",
+      "steps": [
+        {
+          "exec": "cdk synth --app \"ts-node -P tsconfig.dev.json test/metaflow-provider.integ.ts\" --no-notices --no-version-reporting --no-asset-metadata --no-path-metadata -o test/metaflow-provider.integ.snapshot > /dev/null"
+        }
+      ]
+    },
+    "integ:metaflow-provider:watch": {
+      "name": "integ:metaflow-provider:watch",
+      "description": "watch integration test 'metaflow-provider' (without updating snapshots)",
+      "steps": [
+        {
+          "exec": "cdk watch --app \"ts-node -P tsconfig.dev.json test/metaflow-provider.integ.ts\" --no-notices --no-version-reporting --no-asset-metadata --no-path-metadata '**' -o test/.tmp/metaflow-provider.integ/deploy.cdk.out"
+        }
+      ]
+    },
+    "integ:snapshot-all": {
+      "name": "integ:snapshot-all",
+      "description": "update snapshot for all integration tests",
+      "steps": [
+        {
+          "spawn": "integ:metaflow-provider:snapshot"
+        }
+      ]
+    },
     "package": {
       "name": "package",
       "description": "Creates the distribution package",
@@ -180,6 +252,9 @@
         },
         {
           "spawn": "eslint"
+        },
+        {
+          "spawn": "integ:metaflow-provider:assert"
         }
       ]
     },
@@ -219,13 +294,13 @@
       },
       "steps": [
         {
-          "exec": "pnpm dlx npm-check-updates@16 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=@types/jest,eslint-config-prettier,eslint-import-resolver-typescript,eslint-plugin-import,eslint-plugin-prettier,jest,jsii-diff,jsii-pacmak,prettier,projen,ts-jest,ts-node"
+          "exec": "pnpm dlx npm-check-updates@16 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=@types/jest,cdk-nag,eslint-config-prettier,eslint-import-resolver-typescript,eslint-plugin-import,eslint-plugin-prettier,jest,jsii-diff,jsii-pacmak,prettier,projen,ts-jest,ts-node"
         },
         {
           "exec": "pnpm i --no-frozen-lockfile"
         },
         {
-          "exec": "pnpm update @aws-cdk/integ-runner @aws-cdk/integ-tests-alpha @commitlint/cli @commitlint/config-conventional @commitlint/cz-commitlint @types/jest @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser cz-conventional-changelog eslint-config-prettier eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-prettier eslint husky jest jest-junit jsii-diff jsii-pacmak jsii-rosetta jsii lint-staged prettier projen ts-jest ts-node typescript validate-branch-name aws-cdk-lib constructs @aws-cdk/aws-lambda-python-alpha"
+          "exec": "pnpm update @aws-cdk/integ-runner @aws-cdk/integ-tests-alpha @commitlint/cli @commitlint/config-conventional @commitlint/cz-commitlint @types/jest @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-cdk cdk-nag cz-conventional-changelog eslint-config-prettier eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-prettier eslint husky jest jest-junit jsii-diff jsii-pacmak jsii-rosetta jsii lint-staged prettier projen ts-jest ts-node typescript validate-branch-name aws-cdk-lib constructs @aws-cdk/aws-lambda-python-alpha"
         },
         {
           "exec": "npx projen"
