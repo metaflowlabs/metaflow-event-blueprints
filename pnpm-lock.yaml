@@ -78,9 +78,6 @@ importers:
       jsii-diff:
         specifier: ^1.108.0
         version: 1.108.0
-      jsii-docgen:
-        specifier: ^10.5.0
-        version: 10.6.8(jsii-rosetta@5.7.7)
       jsii-pacmak:
         specifier: ^1.108.0
         version: 1.108.0(jsii-rosetta@5.7.7)

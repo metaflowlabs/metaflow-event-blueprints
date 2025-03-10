@@ -58,6 +58,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   deps: deps,
   devDeps: devDeps,
   prettier: true,
+  docgen: false,
   prettierOptions: {
     settings: {
       printWidth: 120,

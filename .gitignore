@@ -51,7 +51,6 @@ junit.xml
 !/.eslintrc.json
 .jsii
 tsconfig.json
-!/API.md
 !/.husky/commit-msg
 !/.husky/pre-commit
 !/.projenrc.ts
